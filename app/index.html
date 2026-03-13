@@ -1,1 +1,65 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SMS Frontend</title><link rel="icon" type="image/png" href="favicon.ico"><link rel="stylesheet" href="styles.css"></head><body><div class="container"><nav class="navbar"><h1>SMS Sender</h1><a href="auth.html" class="auth-link">⚙️ Settings</a></nav><main class="main-content"><section class="send-sms"><h2>Send SMS</h2><div class="form-group"><label for="phone">Destination Phone Number (without +):</label><input type="text" id="phone" placeholder="1234567890" required></div><div class="form-group"><label for="message">Message:</label><textarea id="message" placeholder="Type your message..." maxlength="160"></textarea><div class="char-info"><span id="charCount">0</span>/160 characters</div></div><div class="balance-display">Balance: <strong>$<span id="balance">0.00</span></strong></div><button id="sendBtn" class="btn-primary">Send SMS</button></section><section class="bookmarks"><h2>Quick Bookmarks</h2><div id="bookmarksList" class="bookmarks-list"></div><div class="form-group"><input type="text" id="bookmarkInput" placeholder="Add bookmark..."><button id="addBookmarkBtn" class="btn-secondary">Add</button></div></section><div id="message-status" class="message-status"></div></main></div><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>SMS Application</title>
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">SMS Application</h1>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <a class="nav-item nav-link active" id="nav-send-sms-tab" data-toggle="tab" href="#nav-send-sms" role="tab" aria-controls="nav-send-sms" aria-selected="true">Send SMS</a>
+        <a class="nav-item nav-link" id="nav-bookmarks-tab" data-toggle="tab" href="#nav-bookmarks" role="tab" aria-controls="nav-bookmarks" aria-selected="false">Bookmarks</a>
+        <a class="nav-item nav-link" id="nav-settings-tab" data-toggle="tab" href="#nav-settings" role="tab" aria-controls="nav-settings" aria-selected="false">Settings</a>
+    </div>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-send-sms" role="tabpanel" aria-labelledby="nav-send-sms-tab">
+            <form class="mt-3">
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="text" class="form-control" id="phoneNumber" placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea class="form-control" id="message" rows="3" placeholder="Type your message..." maxlength="160"></textarea>
+                    <small id="charCount" class="form-text text-muted">Characters left: 160</small>
+                </div>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationModal">Send SMS</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="nav-bookmarks" role="tabpanel" aria-labelledby="nav-bookmarks-tab">
+            <h4 class="mt-3">Bookmarks</h4>
+            <p>Manage your bookmarks here.</p>
+        </div>
+        <div class="tab-pane fade" id="nav-settings" role="tabpanel" aria-labelledby="nav-settings-tab">
+            <h4 class="mt-3">Settings</h4>
+            <p>Adjust your settings here.</p>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Send SMS</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to send this SMS?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

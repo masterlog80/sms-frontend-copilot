@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "5001:80"
     environment:
       - GATEWAYAPI_BASE_URL=https://api.gatewayapi.com
     volumes:

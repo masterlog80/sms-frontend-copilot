@@ -1,0 +1,18 @@
+.sms-container {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+}
+
+.sms-message {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.sms-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}

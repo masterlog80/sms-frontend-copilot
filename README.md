@@ -7,28 +7,10 @@
    cd sms-frontend-copilot
    ```
 
-2. Install dependencies:
+2. Create the image:
    ```bash
-   npm install
+   docker-compose up --build
    ```
-
-3. Create a `.env` file using the sample provided:
-   ```bash
-   cp .env.sample .env
-   ```
-
-4. Modify the `.env` file to include your configuration settings.
-
-## Running Commands
-- To start the development server:
-  ```bash
-  npm start
-  ```
-
-- To build the project for production:
-  ```bash
-  npm run build
-  ```
 
 ## Usage Guide
 1. Open your web browser and navigate to `http://localhost:3000` to see the application running.

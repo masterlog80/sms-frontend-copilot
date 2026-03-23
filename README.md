@@ -25,7 +25,7 @@ environment:
 
 **With `docker run`**:
 ```bash
-docker run -d -p 5001:80 -e PASSWORD_UI=your-secret-password sms-frontend-copilot
+docker run -d -p 5001:80 -v "$(pwd)/data:/data" -e PASSWORD_UI=your-secret-password sms-frontend-copilot
 ```
 
 When `PASSWORD_UI` is set, users will be redirected to a login page before they can access the SMS Manager. If `PASSWORD_UI` is **not** set, the UI is accessible without any password.

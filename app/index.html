@@ -144,7 +144,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="apiURL" class="form-label">API URL</label>
-                        <input type="url" class="form-control" id="apiURL" placeholder="https://api.gatewayapi.com" required>
+                        <input type="url" class="form-control" id="apiURL" placeholder="https://gatewayapi.com" required>
                     </div>
                     <div class="d-flex gap-2 mt-4 pt-3" style="border-top:1px solid var(--border-color);">
                         <button type="button" class="btn btn-info" id="testConnection">
@@ -273,8 +273,9 @@
     });
 
     /* ── Settings ─────────────────────────────── */
-    const SETTINGS_KEY  = 'sms-settings';
-    const DEFAULT_API_URL = 'https://api.gatewayapi.com';
+    const SETTINGS_KEY    = 'sms-settings';
+    const DEFAULT_API_URL = 'https://gatewayapi.com';
+    const LEGACY_API_URL  = 'https://api.gatewayapi.com'; // old default, kept for backward compat
 
     function loadSettings() {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -316,8 +317,13 @@
         statusEl.textContent = '';
         statusEl.className = '';
         try {
-            const res = await fetch(`${apiURL}/rest/me`, {
-                headers: { 'Authorization': `Bearer ${apiToken}` }
+            // Route through the nginx proxy (/api/ → https://gatewayapi.com/) to avoid
+            // CORS issues when the configured URL matches the default GatewayAPI host.
+            const fetchURL = (apiURL === DEFAULT_API_URL || apiURL === LEGACY_API_URL)
+                ? '/api/rest/me'
+                : `${apiURL}/rest/me`;
+            const res = await fetch(fetchURL, {
+                headers: { 'Authorization': `Basic ${btoa(apiToken + ':')}` }
             });
             if (res.ok) {
                 btn.classList.remove('btn-info');

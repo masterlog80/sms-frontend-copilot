@@ -231,16 +231,22 @@
     }
 
     async function encryptStore(data) {
-        const key = await _getKey();
-        const iv  = crypto.getRandomValues(new Uint8Array(12));
-        const buf = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv }, key,
-            new TextEncoder().encode(JSON.stringify(data))
-        );
-        const combined = new Uint8Array(12 + buf.byteLength);
-        combined.set(iv);
-        combined.set(new Uint8Array(buf), 12);
-        return _ENC_PREFIX + btoa(String.fromCharCode(...combined));
+        if (!crypto.subtle) return JSON.stringify(data);
+        try {
+            const key = await _getKey();
+            const iv  = crypto.getRandomValues(new Uint8Array(12));
+            const buf = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv }, key,
+                new TextEncoder().encode(JSON.stringify(data))
+            );
+            const combined = new Uint8Array(12 + buf.byteLength);
+            combined.set(iv);
+            combined.set(new Uint8Array(buf), 12);
+            return _ENC_PREFIX + btoa(String.fromCharCode(...combined));
+        } catch (e) {
+            console.warn('encryptStore: encryption failed, falling back to plain JSON', e);
+            return JSON.stringify(data);
+        }
     }
 
     async function decryptStore(val, fallbackDefault) {
@@ -296,7 +302,11 @@
         bookmarkList.querySelectorAll('li').forEach(li => {
             items.push({ name: li.dataset.name, phone: li.dataset.phone });
         });
-        localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
+        try {
+            localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
+        } catch (e) {
+            console.warn('saveBookmarks: failed to write to localStorage', e);
+        }
         await serverPost('bookmarks', items);
     }
 
@@ -448,7 +458,11 @@
             senderID: document.getElementById('settingsSenderID').value.trim(),
             apiURL:   document.getElementById('apiURL').value.trim()
         };
-        localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+        try {
+            localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+        } catch (e) {
+            console.warn('saveSettings: failed to write to localStorage', e);
+        }
         await serverPost('settings', s);
         if (s.senderID) document.getElementById('senderID').value = s.senderID;
         const btn = e.submitter || document.querySelector('#settings form .btn-primary');

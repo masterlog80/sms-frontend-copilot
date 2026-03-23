@@ -81,18 +81,21 @@ If you encounter any issues, please refer to the [issues page](https://github.co
 
 ## Screenshots
 
-### SMS Manager – Send SMS Tab
-![SMS Manager](https://github.com/user-attachments/assets/bddfc787-a691-41cd-b0a9-050facc27abc)
+### SMS Manager – Send SMS Tab – Light Mode
+![SMS Manager Light](docs/images/screenshot_index.png)
+
+### SMS Manager – Send SMS Tab – Dark Mode
+![SMS Manager Dark](docs/images/screenshot_index_dark.png)
 
 ### Authentication Page – Light Mode
-![Authentication Page Light](https://github.com/user-attachments/assets/b21dafac-0f1f-4e01-8ce8-67eab0164410)
+![Authentication Page Light](docs/images/screenshot_auth.png)
 
 ### Authentication Page – Dark Mode
-![Authentication Page Dark](https://github.com/user-attachments/assets/94f76222-d9bf-4900-9bbd-62e9877d1b2d)
+![Authentication Page Dark](docs/images/screenshot_auth_dark.png)
 
 ### Login Page – Light Mode (PASSWORD_UI enabled)
-![Login Page Light](https://github.com/user-attachments/assets/69303c0d-9f65-43b7-9bf7-6f5275843605)
+![Login Page Light](docs/images/screenshot_login.png)
 
 ### Login Page – Dark Mode (PASSWORD_UI enabled)
-![Login Page Dark](https://github.com/user-attachments/assets/fa9e9dea-24f3-4811-84d1-c1b30a78505c)
+![Login Page Dark](docs/images/screenshot_login_dark.png)
 

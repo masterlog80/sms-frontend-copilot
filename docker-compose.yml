@@ -11,8 +11,23 @@ services:
       # Leave unset (or remove the line) to disable password protection.
       # - PASSWORD_UI=changeme
     restart: unless-stopped
+    depends_on:
+      - storage
     networks:
       - sms-network
+
+  storage:
+    build:
+      context: ./storage
+      dockerfile: Dockerfile
+    volumes:
+      - sms-data:/data
+    restart: unless-stopped
+    networks:
+      - sms-network
+
+volumes:
+  sms-data:
 
 networks:
   sms-network:

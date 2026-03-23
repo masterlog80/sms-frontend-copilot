@@ -1,0 +1,12 @@
+{
+  "name": "sms-storage",
+  "version": "1.0.0",
+  "description": "Lightweight JSON file-storage API for SMS Manager bookmarks and settings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

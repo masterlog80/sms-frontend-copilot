@@ -263,6 +263,25 @@
         try { return JSON.parse(val); } catch (_) { return fallbackDefault; }
     }
 
+    /* ── Server-side storage helpers ────────────── */
+    async function serverGet(key) {
+        try {
+            const r = await fetch(`/storage/${key}`);
+            if (r.ok) return await r.json();
+        } catch (_) {}
+        return null;
+    }
+
+    async function serverPost(key, value) {
+        try {
+            await fetch(`/storage/${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(value)
+            });
+        } catch (_) {}
+    }
+
     /* ── Bookmarks ────────────────────────────── */
     const BOOKMARKS_KEY = 'sms-bookmarks';
     const bookmarkList  = document.getElementById('bookmarkList');
@@ -278,6 +297,7 @@
             items.push({ name: li.dataset.name, phone: li.dataset.phone });
         });
         localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
+        await serverPost('bookmarks', items);
     }
 
     function addBookmarkToList(name, phone) {
@@ -306,12 +326,25 @@
     }
 
     async function loadBookmarks() {
+        // Prefer server-side storage (persisted in the Docker volume)
+        const serverItems = await serverGet('bookmarks');
+        if (serverItems && Array.isArray(serverItems)) {
+            serverItems.forEach(item => addBookmarkToList(item.name, item.phone));
+            localStorage.setItem(BOOKMARKS_KEY, await encryptStore(serverItems));
+            refreshEmpty();
+            return;
+        }
+        // Fall back to localStorage
         const raw   = localStorage.getItem(BOOKMARKS_KEY);
         const items = await decryptStore(raw, []);
         items.forEach(item => addBookmarkToList(item.name, item.phone));
         // Re-encrypt any legacy plain-JSON data on first load
         if (raw && !raw.startsWith(_ENC_PREFIX)) {
             localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
+        }
+        // Persist any existing localStorage bookmarks to the server
+        if (items.length > 0) {
+            await serverPost('bookmarks', items);
         }
         refreshEmpty();
     }
@@ -354,6 +387,18 @@
     const LEGACY_API_URL  = 'https://api.gatewayapi.com'; // old default, kept for backward compat
 
     async function loadSettings() {
+        // Prefer server-side storage (persisted in the Docker volume)
+        const serverSettings = await serverGet('settings');
+        if (serverSettings && typeof serverSettings === 'object' && !Array.isArray(serverSettings)) {
+            const s = serverSettings;
+            if (s.apiToken)  document.getElementById('apiToken').value        = s.apiToken;
+            if (s.senderID)  document.getElementById('settingsSenderID').value = s.senderID;
+            if (s.apiURL)    document.getElementById('apiURL').value           = s.apiURL;
+            if (s.senderID)  document.getElementById('senderID').value         = s.senderID;
+            localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+            return;
+        }
+        // Fall back to localStorage
         const raw = localStorage.getItem(SETTINGS_KEY);
         const s   = await decryptStore(raw, {});
         if (s.apiToken)  document.getElementById('apiToken').value        = s.apiToken;
@@ -363,6 +408,10 @@
         // Re-encrypt any legacy plain-JSON data on first load
         if (raw && !raw.startsWith(_ENC_PREFIX)) {
             localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+        }
+        // Persist any existing localStorage settings to the server
+        if (Object.keys(s).length > 0) {
+            await serverPost('settings', s);
         }
     }
 
@@ -400,6 +449,7 @@
             apiURL:   document.getElementById('apiURL').value.trim()
         };
         localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+        await serverPost('settings', s);
         if (s.senderID) document.getElementById('senderID').value = s.senderID;
         const btn = e.submitter || document.querySelector('#settings form .btn-primary');
         const orig = btn.innerHTML;

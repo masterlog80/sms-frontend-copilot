@@ -9,6 +9,7 @@
 
 2. Create the image:
    ```bash
+   yes | docker image prune --all
    docker-compose up --build
    ```
 

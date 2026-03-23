@@ -1,1 +1,100 @@
-<!DOCTYPE html>\n<html lang='en'>\n<head>\n    <meta charset='UTF-8'>\n    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>\n    <title>SMS Manager</title>\n</head>\n<body>\n<div class='container'>\n    <h1>SMS Manager</h1>\n    <ul class='nav nav-tabs'>\n        <li class='nav-item'>\n            <a class='nav-link active' data-toggle='tab' href='#sendSMS'>Send SMS</a>\n        </li>\n        <li class='nav-item'>\n            <a class='nav-link' data-toggle='tab' href='#bookmarks'>Bookmarks</a>\n        </li>\n        <li class='nav-item'>\n            <a class='nav-link' data-toggle='tab' href='#settings'>Settings</a>\n        </li>\n    </ul>\n    <div class='tab-content'>\n        <div id='sendSMS' class='tab-pane fade show active'>\n            <h3>Send SMS</h3>\n            <form>\n                <div class='form-group'>\n                    <label for='phoneNumber'>Phone Number:</label>\n                    <input type='text' class='form-control' id='phoneNumber' placeholder='Enter phone number' required>\n                </div>\n                <div class='form-group'>\n                    <label for='message'>Message:</label>\n                    <textarea class='form-control' id='message' rows='4' placeholder='Enter your message' required></textarea>\n                </div>\n                <div class='form-group'>\n                    <label for='senderID'>Sender ID:</label>\n                    <input type='text' class='form-control' id='senderID' placeholder='Enter sender ID' required>\n                </div>\n                <div class='form-group'>\n                    <label>Balance: </label>\n                    <span id='balance'>1000 USD</span>\n                </div>\n                <button type='submit' class='btn btn-primary'>Send SMS</button>\n            </form>\n        </div>\n        <div id='bookmarks' class='tab-pane fade'>\n            <h3>Bookmarks</h3>\n            <form id='bookmarkForm'>\n                <div class='form-group'>\n                    <label for='bookmark'>Add Bookmark:</label>\n                    <input type='text' class='form-control' id='bookmark' placeholder='Enter bookmark URL' required>\n                </div>\n                <button type='submit' class='btn btn-success'>Add Bookmark</button>\n            </form>\n            <ul id='bookmarkList' class='list-group mt-3'></ul>\n        </div>\n        <div id='settings' class='tab-pane fade'>\n            <h3>Settings</h3>\n            <form>\n                <div class='form-group'>\n                    <label for='apiToken'>API Token:</label>\n                    <input type='text' class='form-control' id='apiToken' placeholder='Enter API Token' required>\n                </div>\n                <div class='form-group'>\n                    <label for='senderID'>Sender ID:</label>\n                    <input type='text' class='form-control' id='settingsSenderID' placeholder='Enter Sender ID' required>\n                </div>\n                <div class='form-group'>\n                    <label for='apiURL'>API URL:</label>\n                    <input type='text' class='form-control' id='apiURL' placeholder='Enter API URL' required>\n                </div>\n                <button type='button' class='btn btn-info'>Test Connection</button>\n            </form>\n        </div>\n    </div>\n</div>\n<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>\n<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js'></script>\n<script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>\n<script>\n    // Add functionality for bookmarks\n    $('#bookmarkForm').submit(function(event) {\n        event.preventDefault();\n        let bookmark = $('#bookmark').val();\n        $('#bookmarkList').append('<li class="list-group-item">' + bookmark + '</li>');\n        $('#bookmark').val('');\n    });\n</script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>
+    <link rel='stylesheet' href='styles.css'>
+    <title>SMS Manager</title>
+</head>
+<body>
+<div class='app'>
+    <div class='header'>SMS Manager</div>
+    <div class='container mt-4'>
+        <ul class='nav nav-tabs'>
+            <li class='nav-item'>
+                <a class='nav-link active' data-toggle='tab' href='#sendSMS'>Send SMS</a>
+            </li>
+            <li class='nav-item'>
+                <a class='nav-link' data-toggle='tab' href='#bookmarks'>Bookmarks</a>
+            </li>
+            <li class='nav-item'>
+                <a class='nav-link' data-toggle='tab' href='#settings'>Settings</a>
+            </li>
+        </ul>
+        <div class='tab-content mt-3'>
+            <div id='sendSMS' class='tab-pane fade show active'>
+                <div class='card'>
+                    <h3>Send SMS</h3>
+                    <form>
+                        <div class='form-group'>
+                            <label for='phoneNumber'>Phone Number:</label>
+                            <input type='text' class='form-control' id='phoneNumber' placeholder='Enter phone number' required>
+                        </div>
+                        <div class='form-group'>
+                            <label for='message'>Message:</label>
+                            <textarea class='form-control' id='message' rows='4' placeholder='Enter your message' required></textarea>
+                        </div>
+                        <div class='form-group'>
+                            <label for='senderID'>Sender ID:</label>
+                            <input type='text' class='form-control' id='senderID' placeholder='Enter sender ID' required>
+                        </div>
+                        <div class='form-group'>
+                            <label>Balance: </label>
+                            <span id='balance'>1000 USD</span>
+                        </div>
+                        <button type='submit' class='btn btn-primary'>Send SMS</button>
+                    </form>
+                </div>
+            </div>
+            <div id='bookmarks' class='tab-pane fade'>
+                <div class='card'>
+                    <h3>Bookmarks</h3>
+                    <form id='bookmarkForm'>
+                        <div class='form-group'>
+                            <label for='bookmark'>Add Bookmark:</label>
+                            <input type='text' class='form-control' id='bookmark' placeholder='Enter bookmark URL' required>
+                        </div>
+                        <button type='submit' class='btn btn-success'>Add Bookmark</button>
+                    </form>
+                    <ul id='bookmarkList' class='list-group mt-3'></ul>
+                </div>
+            </div>
+            <div id='settings' class='tab-pane fade'>
+                <div class='card'>
+                    <h3>Settings</h3>
+                    <form>
+                        <div class='form-group'>
+                            <label for='apiToken'>API Token:</label>
+                            <input type='text' class='form-control' id='apiToken' placeholder='Enter API Token' required>
+                        </div>
+                        <div class='form-group'>
+                            <label for='settingsSenderID'>Sender ID:</label>
+                            <input type='text' class='form-control' id='settingsSenderID' placeholder='Enter Sender ID' required>
+                        </div>
+                        <div class='form-group'>
+                            <label for='apiURL'>API URL:</label>
+                            <input type='text' class='form-control' id='apiURL' placeholder='Enter API URL' required>
+                        </div>
+                        <button type='button' class='btn btn-info'>Test Connection</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='footer'>© 2024 SMS Manager. All rights reserved.</div>
+</div>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js'></script>
+<script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>
+<script>
+    // Add functionality for bookmarks
+    $('#bookmarkForm').submit(function(event) {
+        event.preventDefault();
+        let bookmark = $('#bookmark').val();
+        $('#bookmarkList').append('<li class="list-group-item">' + bookmark + '</li>');
+        $('#bookmark').val('');
+    });
+</script>
+</body>
+</html>

@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <!-- Custom styles -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
 
@@ -104,10 +106,13 @@
                     <span class="title-icon"><i class="bi bi-bookmark-fill"></i></span>
                     Bookmarks
                 </div>
-                <form id="bookmarkForm" class="d-flex gap-2 mb-3">
-                    <input type="url" class="form-control" id="bookmark" placeholder="https://example.com" required>
+                <form id="bookmarkForm" class="mb-3">
+                    <div class="d-flex gap-2 mb-2">
+                        <input type="text" class="form-control" id="bookmarkName" placeholder="Name" required>
+                        <input type="tel" class="form-control" id="bookmarkPhone" placeholder="+1 555 000 0000" pattern="^\+?[\d\s\-().]{6,20}$" required>
+                    </div>
                     <button type="submit" class="btn btn-success text-nowrap">
-                        <i class="bi bi-plus-lg me-1"></i> Add
+                        <i class="bi bi-plus-lg me-1"></i> Add Bookmark
                     </button>
                 </form>
                 <hr class="divider my-2">
@@ -149,6 +154,7 @@
                             <i class="bi bi-floppy me-1"></i> Save Settings
                         </button>
                     </div>
+                    <div id="testConnectionStatus"></div>
                 </form>
             </div>
         </div>
@@ -159,7 +165,6 @@
 <!-- ── Footer ─────────────────────────────────────────────── -->
 <footer class="footer">© 2024 SMS Manager. All rights reserved.</footer>
 
-<!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     /* ── Dark / light mode toggle ─────────────── */
@@ -180,31 +185,72 @@
     // Restore saved preference
     applyTheme(localStorage.getItem('sms-theme') || 'light');
 
+    /* ── Helpers ─────────────────────────────── */
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     /* ── Bookmarks ────────────────────────────── */
-    const bookmarkList = document.getElementById('bookmarkList');
-    const noBookmarks  = document.getElementById('noBookmarks');
+    const BOOKMARKS_KEY = 'sms-bookmarks';
+    const bookmarkList  = document.getElementById('bookmarkList');
+    const noBookmarks   = document.getElementById('noBookmarks');
 
     function refreshEmpty() {
         noBookmarks.style.display = bookmarkList.children.length === 0 ? '' : 'none';
     }
-    refreshEmpty();
+
+    function saveBookmarks() {
+        const items = [];
+        bookmarkList.querySelectorAll('li').forEach(li => {
+            items.push({ name: li.dataset.name, phone: li.dataset.phone });
+        });
+        localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(items));
+    }
+
+    function addBookmarkToList(name, phone) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.dataset.name  = name;
+        li.dataset.phone = phone;
+        li.innerHTML = `
+            <div class="d-flex flex-column">
+                <span class="fw-semibold" style="font-size:0.9rem;">${escapeHtml(name)}</span>
+                <button class="btn btn-link p-0 text-start phone-link" style="color:var(--color-primary);font-size:0.85rem;">
+                    <i class="bi bi-telephone me-1"></i>${escapeHtml(phone)}
+                </button>
+            </div>
+            <button class="btn btn-outline-danger btn-sm remove-bm"><i class="bi bi-trash"></i></button>`;
+        li.querySelector('.phone-link').addEventListener('click', () => {
+            document.getElementById('phoneNumber').value = phone;
+            document.getElementById('sendSMS-tab').click();
+        });
+        li.querySelector('.remove-bm').addEventListener('click', () => {
+            li.remove();
+            refreshEmpty();
+            saveBookmarks();
+        });
+        bookmarkList.appendChild(li);
+    }
+
+    function loadBookmarks() {
+        const items = JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]');
+        items.forEach(item => addBookmarkToList(item.name, item.phone));
+        refreshEmpty();
+    }
 
     document.getElementById('bookmarkForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const url = document.getElementById('bookmark').value.trim();
-        if (!url) return;
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.innerHTML = `
-            <a href="${url}" target="_blank" rel="noopener" class="text-truncate" style="max-width:80%;color:var(--color-primary);">
-                <i class="bi bi-link-45deg me-1"></i>${url}
-            </a>
-            <button class="btn btn-outline-danger btn-sm remove-bm"><i class="bi bi-trash"></i></button>`;
-        li.querySelector('.remove-bm').addEventListener('click', () => { li.remove(); refreshEmpty(); });
-        bookmarkList.appendChild(li);
-        document.getElementById('bookmark').value = '';
+        const name  = document.getElementById('bookmarkName').value.trim();
+        const phone = document.getElementById('bookmarkPhone').value.trim();
+        if (!name || !phone) return;
+        addBookmarkToList(name, phone);
+        saveBookmarks();
+        document.getElementById('bookmarkName').value  = '';
+        document.getElementById('bookmarkPhone').value = '';
         refreshEmpty();
     });
+
+    loadBookmarks();
 
     /* ── Character counter ────────────────────── */
     const msgArea   = document.getElementById('message');
@@ -225,6 +271,81 @@
             icon.className = 'bi bi-eye';
         }
     });
+
+    /* ── Settings ─────────────────────────────── */
+    const SETTINGS_KEY  = 'sms-settings';
+    const DEFAULT_API_URL = 'https://api.gatewayapi.com';
+
+    function loadSettings() {
+        const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        if (s.apiToken)  document.getElementById('apiToken').value        = s.apiToken;
+        if (s.senderID)  document.getElementById('settingsSenderID').value = s.senderID;
+        if (s.apiURL)    document.getElementById('apiURL').value           = s.apiURL;
+        if (s.senderID)  document.getElementById('senderID').value         = s.senderID;
+    }
+
+    document.querySelector('#settings form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const s = {
+            apiToken: document.getElementById('apiToken').value.trim(),
+            senderID: document.getElementById('settingsSenderID').value.trim(),
+            apiURL:   document.getElementById('apiURL').value.trim()
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+        if (s.senderID) document.getElementById('senderID').value = s.senderID;
+        const btn = e.submitter || document.querySelector('#settings form .btn-primary');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Saved!';
+        btn.disabled = true;
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
+    });
+
+    document.getElementById('testConnection').addEventListener('click', async function() {
+        const apiToken = document.getElementById('apiToken').value.trim();
+        const apiURL   = (document.getElementById('apiURL').value.trim() || DEFAULT_API_URL).replace(/\/$/, '');
+        const btn = this;
+        const statusEl = document.getElementById('testConnectionStatus');
+        if (!apiToken) {
+            statusEl.textContent = 'Please enter an API Token first.';
+            statusEl.className = 'small text-danger mt-2';
+            return;
+        }
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Testing…';
+        btn.disabled = true;
+        statusEl.textContent = '';
+        statusEl.className = '';
+        try {
+            const res = await fetch(`${apiURL}/rest/me`, {
+                headers: { 'Authorization': `Bearer ${apiToken}` }
+            });
+            if (res.ok) {
+                btn.classList.remove('btn-info');
+                btn.classList.add('btn-success');
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Connected!';
+            } else {
+                btn.classList.remove('btn-info');
+                btn.classList.add('btn-danger');
+                btn.innerHTML = '<i class="bi bi-x-lg me-1"></i> Failed';
+                statusEl.textContent = `Error ${res.status}: ${res.statusText}`;
+                statusEl.className = 'small text-danger mt-2';
+            }
+        } catch (err) {
+            btn.classList.remove('btn-info');
+            btn.classList.add('btn-danger');
+            btn.innerHTML = '<i class="bi bi-x-lg me-1"></i> Error';
+            statusEl.textContent = err.message;
+            statusEl.className = 'small text-danger mt-2';
+        }
+        setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.disabled = false;
+            btn.classList.remove('btn-success', 'btn-danger');
+            btn.classList.add('btn-info');
+        }, 2500);
+    });
+
+    loadSettings();
 </script>
 </body>
 </html>

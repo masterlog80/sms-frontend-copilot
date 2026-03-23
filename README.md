@@ -10,13 +10,13 @@
 2. Create the image:
    ```bash
    yes | docker image prune --all
-   docker build -t rk3566-monitor-copilot .
+   docker build -t sms-frontend-copilot .
    ```
 3. Deploy the composer file:
     ```bash
     docker compose -f docker-compose.yml up -d --remove-orphans
     ```
-4. Open [http://localhost:5000](http://localhost:5000) in your browser.
+4. Open [http://localhost:5001](http://localhost:5000) in your browser.
 
 ## UI Password Protection
 

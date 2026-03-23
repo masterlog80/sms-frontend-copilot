@@ -7,8 +7,6 @@ services:
       - "5001:80"
     environment:
       - GATEWAYAPI_BASE_URL=https://api.gatewayapi.com
-    volumes:
-      - ./app:/usr/share/nginx/html
     restart: unless-stopped
     networks:
       - sms-network

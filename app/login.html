@@ -124,10 +124,19 @@
         let h4=0x510e527f, h5=0x9b05688c, h6=0x1f83d9ab, h7=0x5be0cd19;
         const bytes = [];
         for (let i = 0; i < str.length; i++) {
-            const c = str.charCodeAt(i);
+            let c = str.charCodeAt(i);
+            // Handle surrogate pairs (characters outside BMP, e.g. emoji)
+            if (c >= 0xD800 && c <= 0xDBFF && i + 1 < str.length) {
+                const low = str.charCodeAt(i + 1);
+                if (low >= 0xDC00 && low <= 0xDFFF) {
+                    c = 0x10000 + (c - 0xD800) * 0x400 + (low - 0xDC00);
+                    i++;
+                }
+            }
             if (c < 0x80) bytes.push(c);
             else if (c < 0x800) { bytes.push(0xc0|(c>>6)); bytes.push(0x80|(c&0x3f)); }
-            else { bytes.push(0xe0|(c>>12)); bytes.push(0x80|((c>>6)&0x3f)); bytes.push(0x80|(c&0x3f)); }
+            else if (c < 0x10000) { bytes.push(0xe0|(c>>12)); bytes.push(0x80|((c>>6)&0x3f)); bytes.push(0x80|(c&0x3f)); }
+            else { bytes.push(0xf0|(c>>18)); bytes.push(0x80|((c>>12)&0x3f)); bytes.push(0x80|((c>>6)&0x3f)); bytes.push(0x80|(c&0x3f)); }
         }
         const len = bytes.length;
         bytes.push(0x80);

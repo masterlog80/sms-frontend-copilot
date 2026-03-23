@@ -23,5 +23,8 @@ EOF
     echo "[entrypoint] UI password protection disabled (PASSWORD_UI not set)."
 fi
 
+# Start the storage server in the background, forwarding output to nginx's stdout/stderr
+node /storage/server.js >/proc/1/fd/1 2>/proc/1/fd/2 &
+
 # Hand off to the default nginx entrypoint
 exec nginx -g 'daemon off;'

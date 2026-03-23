@@ -131,6 +131,28 @@ body {
     border-color: var(--color-primary);
 }
 
+/* ── Logout Button ──────────────────────────────────────────── */
+.btn-logout {
+    background: transparent;
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    height: 38px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0 0.75rem;
+    white-space: nowrap;
+}
+
+.btn-logout:hover {
+    background: var(--color-danger);
+    color: #fff;
+}
+
 /* ── Navigation Tabs ────────────────────────────────────────── */
 .nav-tabs {
     border-bottom: 2px solid var(--border-color);

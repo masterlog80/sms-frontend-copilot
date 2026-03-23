@@ -38,6 +38,9 @@
         <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode">
             <i class="bi bi-moon-fill" id="themeIcon"></i>
         </button>
+        <button class="btn-logout d-none" id="logoutBtn" title="Logout">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+        </button>
     </div>
 </nav>
 
@@ -195,6 +198,16 @@
 
     // Restore saved preference
     applyTheme(localStorage.getItem('sms-theme') || 'light');
+
+    /* ── Logout button ───────────────────────── */
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (window.APP_CONFIG && window.APP_CONFIG.passwordEnabled) {
+        logoutBtn.classList.remove('d-none');
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('ui-authenticated');
+            window.location.replace('/login.html');
+        });
+    }
 
     /* ── Helpers ─────────────────────────────── */
     function escapeHtml(str) {

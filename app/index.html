@@ -88,13 +88,14 @@
                             <span class="form-label d-block mb-1">Account Balance</span>
                             <span class="balance-badge">
                                 <i class="bi bi-wallet2"></i>
-                                <span id="balance">1,000 USD</span>
+                                <span id="balance">—</span>
                             </span>
                         </div>
                         <button type="submit" class="btn btn-primary px-4">
                             <i class="bi bi-send me-1"></i> Send SMS
                         </button>
                     </div>
+                    <div id="sendStatus"></div>
                 </form>
             </div>
         </div>
@@ -285,6 +286,32 @@
         if (s.senderID)  document.getElementById('senderID').value         = s.senderID;
     }
 
+    async function fetchBalance(token, baseURL) {
+        if (token === undefined) {
+            const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            token   = s.apiToken || '';
+            baseURL = s.apiURL   || '';
+        }
+        if (!token) return;
+        const apiURL   = (baseURL || DEFAULT_API_URL).replace(/\/$/, '');
+        const fetchURL = (apiURL === DEFAULT_API_URL || apiURL === LEGACY_API_URL)
+            ? '/api/rest/me'
+            : `${apiURL}/rest/me`;
+        try {
+            const res = await fetch(fetchURL, {
+                headers: { 'Authorization': `Basic ${btoa(token + ':')}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const balanceEl = document.getElementById('balance');
+                if (data.credit !== undefined) {
+                    const curr = data.currency ? ` ${data.currency}` : '';
+                    balanceEl.textContent = `${parseFloat(data.credit).toFixed(2)}${curr}`;
+                }
+            }
+        } catch (err) { console.error('fetchBalance error:', err); }
+    }
+
     document.querySelector('#settings form').addEventListener('submit', function(e) {
         e.preventDefault();
         const s = {
@@ -329,6 +356,7 @@
                 btn.classList.remove('btn-info');
                 btn.classList.add('btn-success');
                 btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Connected!';
+                fetchBalance(apiToken, apiURL);
             } else {
                 btn.classList.remove('btn-info');
                 btn.classList.add('btn-danger');
@@ -351,7 +379,69 @@
         }, 2500);
     });
 
+    /* ── Send SMS ─────────────────────────────── */
+    document.querySelector('#sendSMS form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const s        = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        const apiToken = s.apiToken || '';
+        const apiURL   = (s.apiURL || DEFAULT_API_URL).replace(/\/$/, '');
+        const statusEl = document.getElementById('sendStatus');
+
+        if (!apiToken) {
+            statusEl.innerHTML = '<div class="alert alert-warning mt-3 mb-0"><i class="bi bi-exclamation-triangle me-1"></i> No API token configured. Please go to Settings first.</div>';
+            return;
+        }
+
+        const phone   = document.getElementById('phoneNumber').value.trim().replace(/[\s\-().+]/g, '');
+        const msisdn  = parseInt(phone, 10);
+        if (!phone || isNaN(msisdn)) {
+            statusEl.innerHTML = '<div class="alert alert-warning mt-3 mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Please enter a valid phone number.</div>';
+            return;
+        }
+        const message = document.getElementById('message').value.trim();
+        const sender  = document.getElementById('senderID').value.trim();
+
+        const btn  = this.querySelector('button[type="submit"]');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending…';
+        btn.disabled  = true;
+        statusEl.innerHTML = '';
+
+        const fetchURL = (apiURL === DEFAULT_API_URL || apiURL === LEGACY_API_URL)
+            ? '/api/rest/mtsms'
+            : `${apiURL}/rest/mtsms`;
+
+        try {
+            const res  = await fetch(fetchURL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${btoa(apiToken + ':')}`,
+                    'Content-Type':  'application/json'
+                },
+                body: JSON.stringify({
+                    recipients: [{ msisdn }],
+                    message,
+                    sender
+                })
+            });
+            let bodyText = '';
+            try { bodyText = await res.text(); } catch (parseErr) { console.error('Response body parse error:', parseErr); }
+            if (res.ok) {
+                statusEl.innerHTML = `<div class="alert alert-success mt-3 mb-0"><i class="bi bi-check-circle me-1"></i> SMS sent successfully! (HTTP ${res.status})</div>`;
+                fetchBalance(apiToken, apiURL);
+            } else {
+                statusEl.innerHTML = `<div class="alert alert-danger mt-3 mb-0"><i class="bi bi-x-circle me-1"></i> Failed (HTTP ${res.status} ${escapeHtml(res.statusText)}): ${escapeHtml(bodyText)}</div>`;
+            }
+        } catch (err) {
+            statusEl.innerHTML = `<div class="alert alert-danger mt-3 mb-0"><i class="bi bi-x-circle me-1"></i> Error: ${escapeHtml(err.message)}</div>`;
+        }
+
+        btn.innerHTML = orig;
+        btn.disabled  = false;
+    });
+
     loadSettings();
+    fetchBalance();
 </script>
 </body>
 </html>

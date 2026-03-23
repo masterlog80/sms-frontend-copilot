@@ -22,9 +22,15 @@ If you encounter any issues, please refer to the [issues page](https://github.co
 
 ## Screenshots
 
-### SMS Manager
-![SMS Manager](https://github.com/user-attachments/assets/cb31073b-d187-4280-a18c-1e000d4dbbcb)
+### SMS Manager – Light Mode
+![SMS Manager Light](https://github.com/user-attachments/assets/5243593d-170a-451d-ad81-fa706fb1a318)
 
-### Authentication Page
-![Authentication Page](docs/images/screenshot_auth.png)
+### SMS Manager – Dark Mode
+![SMS Manager Dark](https://github.com/user-attachments/assets/bd0c5080-9d71-4dbf-b2ee-dffcc0e1967a)
+
+### Authentication Page – Light Mode
+![Authentication Page Light](https://github.com/user-attachments/assets/b21dafac-0f1f-4e01-8ce8-67eab0164410)
+
+### Authentication Page – Dark Mode
+![Authentication Page Dark](https://github.com/user-attachments/assets/94f76222-d9bf-4900-9bbd-62e9877d1b2d)
 

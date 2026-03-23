@@ -7,6 +7,9 @@ services:
       - "5001:80"
     environment:
       - GATEWAYAPI_BASE_URL=https://api.gatewayapi.com
+      # Set PASSWORD_UI to enable password protection for the UI.
+      # Leave unset (or remove the line) to disable password protection.
+      # - PASSWORD_UI=changeme
     restart: unless-stopped
     networks:
       - sms-network

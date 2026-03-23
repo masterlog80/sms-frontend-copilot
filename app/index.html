@@ -191,6 +191,68 @@
         return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    /* ── Encryption (AES-GCM via Web Crypto API) ─ */
+    // NOTE: The passphrase is embedded in the source because this is a client-side-only
+    // app. Combined with a per-device random salt this provides storage obfuscation and
+    // protects against casual localStorage inspection, but not against an adversary who
+    // has access to both the source code and the localStorage contents.
+    const _ENC_PASS   = 'sms-manager-enc-v1';
+    const _ENC_PREFIX = 'enc:v1:'; // magic prefix — distinguishes encrypted from legacy plain JSON
+
+    function _getSalt() {
+        const stored = localStorage.getItem('sms-enc-salt');
+        if (stored) return Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('sms-enc-salt', btoa(String.fromCharCode(...salt)));
+        return salt;
+    }
+
+    async function _getKey() {
+        const raw = await crypto.subtle.importKey(
+            'raw', new TextEncoder().encode(_ENC_PASS),
+            'PBKDF2', false, ['deriveKey']
+        );
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: _getSalt(), iterations: 100000, hash: 'SHA-256' },
+            raw,
+            { name: 'AES-GCM', length: 256 },
+            false, ['encrypt', 'decrypt']
+        );
+    }
+
+    async function encryptStore(data) {
+        const key = await _getKey();
+        const iv  = crypto.getRandomValues(new Uint8Array(12));
+        const buf = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv }, key,
+            new TextEncoder().encode(JSON.stringify(data))
+        );
+        const combined = new Uint8Array(12 + buf.byteLength);
+        combined.set(iv);
+        combined.set(new Uint8Array(buf), 12);
+        return _ENC_PREFIX + btoa(String.fromCharCode(...combined));
+    }
+
+    async function decryptStore(val, fallbackDefault) {
+        if (!val) return fallbackDefault;
+        if (val.startsWith(_ENC_PREFIX)) {
+            try {
+                const combined = Uint8Array.from(atob(val.slice(_ENC_PREFIX.length)), c => c.charCodeAt(0));
+                const key      = await _getKey();
+                const plain    = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: combined.slice(0, 12) },
+                    key, combined.slice(12)
+                );
+                return JSON.parse(new TextDecoder().decode(plain));
+            } catch (e) {
+                console.warn('decryptStore: failed to decrypt data', e);
+                return fallbackDefault;
+            }
+        }
+        // Legacy unencrypted JSON — parse and let the caller re-encrypt on next save
+        try { return JSON.parse(val); } catch (_) { return fallbackDefault; }
+    }
+
     /* ── Bookmarks ────────────────────────────── */
     const BOOKMARKS_KEY = 'sms-bookmarks';
     const bookmarkList  = document.getElementById('bookmarkList');
@@ -200,12 +262,12 @@
         noBookmarks.style.display = bookmarkList.children.length === 0 ? '' : 'none';
     }
 
-    function saveBookmarks() {
+    async function saveBookmarks() {
         const items = [];
         bookmarkList.querySelectorAll('li').forEach(li => {
             items.push({ name: li.dataset.name, phone: li.dataset.phone });
         });
-        localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(items));
+        localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
     }
 
     function addBookmarkToList(name, phone) {
@@ -225,33 +287,36 @@
             document.getElementById('phoneNumber').value = phone;
             document.getElementById('sendSMS-tab').click();
         });
-        li.querySelector('.remove-bm').addEventListener('click', () => {
+        li.querySelector('.remove-bm').addEventListener('click', async () => {
             li.remove();
             refreshEmpty();
-            saveBookmarks();
+            await saveBookmarks();
         });
         bookmarkList.appendChild(li);
     }
 
-    function loadBookmarks() {
-        const items = JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]');
+    async function loadBookmarks() {
+        const raw   = localStorage.getItem(BOOKMARKS_KEY);
+        const items = await decryptStore(raw, []);
         items.forEach(item => addBookmarkToList(item.name, item.phone));
+        // Re-encrypt any legacy plain-JSON data on first load
+        if (raw && !raw.startsWith(_ENC_PREFIX)) {
+            localStorage.setItem(BOOKMARKS_KEY, await encryptStore(items));
+        }
         refreshEmpty();
     }
 
-    document.getElementById('bookmarkForm').addEventListener('submit', function(e) {
+    document.getElementById('bookmarkForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const name  = document.getElementById('bookmarkName').value.trim();
         const phone = document.getElementById('bookmarkPhone').value.trim();
         if (!name || !phone) return;
         addBookmarkToList(name, phone);
-        saveBookmarks();
+        await saveBookmarks();
         document.getElementById('bookmarkName').value  = '';
         document.getElementById('bookmarkPhone').value = '';
         refreshEmpty();
     });
-
-    loadBookmarks();
 
     /* ── Character counter ────────────────────── */
     const msgArea   = document.getElementById('message');
@@ -278,17 +343,22 @@
     const DEFAULT_API_URL = 'https://gatewayapi.com';
     const LEGACY_API_URL  = 'https://api.gatewayapi.com'; // old default, kept for backward compat
 
-    function loadSettings() {
-        const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    async function loadSettings() {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        const s   = await decryptStore(raw, {});
         if (s.apiToken)  document.getElementById('apiToken').value        = s.apiToken;
         if (s.senderID)  document.getElementById('settingsSenderID').value = s.senderID;
         if (s.apiURL)    document.getElementById('apiURL').value           = s.apiURL;
         if (s.senderID)  document.getElementById('senderID').value         = s.senderID;
+        // Re-encrypt any legacy plain-JSON data on first load
+        if (raw && !raw.startsWith(_ENC_PREFIX)) {
+            localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
+        }
     }
 
     async function fetchBalance(token, baseURL) {
         if (token === undefined) {
-            const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            const s = await decryptStore(localStorage.getItem(SETTINGS_KEY), {});
             token   = s.apiToken || '';
             baseURL = s.apiURL   || '';
         }
@@ -312,14 +382,14 @@
         } catch (err) { console.error('fetchBalance error:', err); }
     }
 
-    document.querySelector('#settings form').addEventListener('submit', function(e) {
+    document.querySelector('#settings form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const s = {
             apiToken: document.getElementById('apiToken').value.trim(),
             senderID: document.getElementById('settingsSenderID').value.trim(),
             apiURL:   document.getElementById('apiURL').value.trim()
         };
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+        localStorage.setItem(SETTINGS_KEY, await encryptStore(s));
         if (s.senderID) document.getElementById('senderID').value = s.senderID;
         const btn = e.submitter || document.querySelector('#settings form .btn-primary');
         const orig = btn.innerHTML;
@@ -382,7 +452,7 @@
     /* ── Send SMS ─────────────────────────────── */
     document.querySelector('#sendSMS form').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const s        = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        const s        = await decryptStore(localStorage.getItem(SETTINGS_KEY), {});
         const apiToken = s.apiToken || '';
         const apiURL   = (s.apiURL || DEFAULT_API_URL).replace(/\/$/, '');
         const statusEl = document.getElementById('sendStatus');
@@ -440,8 +510,11 @@
         btn.disabled  = false;
     });
 
-    loadSettings();
-    fetchBalance();
+    (async () => {
+        await loadBookmarks();
+        await loadSettings();
+        await fetchBalance();
+    })();
 </script>
 </body>
 </html>

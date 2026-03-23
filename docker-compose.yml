@@ -10,6 +10,10 @@ services:
       # Set PASSWORD_UI to enable password protection for the UI.
       # Leave unset (or remove the line) to disable password protection.
       # - PASSWORD_UI=changeme
+      # Set DEBUG_LEVEL to control API request/response logging in container logs.
+      # Accepted values: NO (default, no API logging), INFO (method/URL/status/timing),
+      #                  DEBUG (full request body and response status)
+      # - DEBUG_LEVEL=NO
     volumes:
       - ./data:/data
     restart: unless-stopped

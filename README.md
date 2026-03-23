@@ -32,6 +32,41 @@ When `PASSWORD_UI` is set, users will be redirected to a login page before they 
 
 > **Security note:** This is client-side access control, suitable for preventing casual or accidental access. For sensitive deployments, restrict network access to the container (e.g. via a firewall, VPN, or reverse-proxy with server-side authentication).
 
+## API Debug Logging
+
+You can control the level of API request/response logging in the container logs by setting the `DEBUG_LEVEL` environment variable.
+
+| Value | Description |
+|-------|-------------|
+| `NO` (default) | No API-specific logging |
+| `INFO` | Logs each API call: method, URL, HTTP status code, and response time |
+| `DEBUG` | Logs full details including the request body and response status |
+
+**With Docker Compose**, uncomment and set the variable in `docker-compose.yml`:
+```yaml
+environment:
+  - DEBUG_LEVEL=INFO
+```
+
+**With `docker run`**:
+```bash
+docker run -d -p 5001:80 -v "$(pwd)/data:/data" -e DEBUG_LEVEL=DEBUG sms-frontend-copilot
+```
+
+Example container log output at `INFO` level:
+```
+[entrypoint] API info logging enabled (DEBUG_LEVEL=INFO): method, URL, status, timing.
+[28/Mar/2025:12:00:00 +0000] API POST /api/rest/mtsms -> status=200 bytes=42 rt=0.312
+```
+
+Example container log output at `DEBUG` level:
+```
+[entrypoint] API debug logging enabled (DEBUG_LEVEL=DEBUG): full request body and response status.
+[28/Mar/2025:12:00:00 +0000] API POST /api/rest/mtsms -> status=200 bytes=42 rt=0.312 req_body="{"recipients":[{"msisdn":4512345678}],"message":"Hello","sender":"MyBrand"}"
+```
+
+> **Security note:** `DEBUG` level logs the full request body, which may include phone numbers and message content. Use it only in trusted environments and avoid shipping DEBUG-level logs to external log aggregators.
+
 ## Usage Guide
 1. Open your web browser and navigate to `http://localhost:5001` to see the application running.
 2. You can access various features from the navigation bar.

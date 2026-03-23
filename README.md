@@ -12,6 +12,10 @@
    docker-compose up --build
    ```
 
+## Screenshot
+
+![SMS Manager Screenshot](https://github.com/user-attachments/assets/2f72d77c-509d-4a85-a544-0d0e80d75146)
+
 ## Usage Guide
 1. Open your web browser and navigate to `http://localhost:3000` to see the application running.
 2. You can access various features from the navigation bar.

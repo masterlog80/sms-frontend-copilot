@@ -1,99 +1,229 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en" data-theme="light">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>
-    <link rel='stylesheet' href='styles.css'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS Manager</title>
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class='app'>
-    <div class='header'>SMS Manager</div>
-    <div class='container mt-4'>
-        <ul class='nav nav-tabs'>
-            <li class='nav-item'>
-                <a class='nav-link active' data-toggle='tab' href='#sendSMS'>Send SMS</a>
-            </li>
-            <li class='nav-item'>
-                <a class='nav-link' data-toggle='tab' href='#bookmarks'>Bookmarks</a>
-            </li>
-            <li class='nav-item'>
-                <a class='nav-link' data-toggle='tab' href='#settings'>Settings</a>
-            </li>
-        </ul>
-        <div class='tab-content mt-3'>
-            <div id='sendSMS' class='tab-pane fade show active'>
-                <div class='card'>
-                    <h3>Send SMS</h3>
-                    <form>
-                        <div class='form-group'>
-                            <label for='phoneNumber'>Phone Number:</label>
-                            <input type='text' class='form-control' id='phoneNumber' placeholder='Enter phone number' required>
-                        </div>
-                        <div class='form-group'>
-                            <label for='message'>Message:</label>
-                            <textarea class='form-control' id='message' rows='4' placeholder='Enter your message' required></textarea>
-                        </div>
-                        <div class='form-group'>
-                            <label for='senderID'>Sender ID:</label>
-                            <input type='text' class='form-control' id='senderID' placeholder='Enter sender ID' required>
-                        </div>
-                        <div class='form-group'>
-                            <label>Balance: </label>
-                            <span id='balance'>1000 USD</span>
-                        </div>
-                        <button type='submit' class='btn btn-primary'>Send SMS</button>
-                    </form>
+
+<!-- ── Navbar ──────────────────────────────────────────────── -->
+<nav class="navbar-custom d-flex align-items-center justify-content-between">
+    <span class="navbar-brand-text">
+        <span class="brand-icon"><i class="bi bi-chat-dots-fill"></i></span>
+        SMS Manager
+    </span>
+    <div class="d-flex align-items-center gap-2">
+        <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode">
+            <i class="bi bi-moon-fill" id="themeIcon"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- ── Main content ────────────────────────────────────────── -->
+<div class="container py-4" style="max-width: 760px;">
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="sendSMS-tab" data-bs-toggle="tab" data-bs-target="#sendSMS" type="button" role="tab">
+                <i class="bi bi-send"></i> Send SMS
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bookmarks-tab" data-bs-toggle="tab" data-bs-target="#bookmarks" type="button" role="tab">
+                <i class="bi bi-bookmark"></i> Bookmarks
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                <i class="bi bi-gear"></i> Settings
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ── Send SMS ──────────────────────────────────────── -->
+        <div id="sendSMS" class="tab-pane fade show active" role="tabpanel">
+            <div class="card">
+                <div class="card-title">
+                    <span class="title-icon"><i class="bi bi-send-fill"></i></span>
+                    Send SMS
                 </div>
-            </div>
-            <div id='bookmarks' class='tab-pane fade'>
-                <div class='card'>
-                    <h3>Bookmarks</h3>
-                    <form id='bookmarkForm'>
-                        <div class='form-group'>
-                            <label for='bookmark'>Add Bookmark:</label>
-                            <input type='text' class='form-control' id='bookmark' placeholder='Enter bookmark URL' required>
+                <form>
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background:var(--bg-body);border-color:var(--input-border);color:var(--text-muted);">
+                                <i class="bi bi-telephone"></i>
+                            </span>
+                            <input type="text" class="form-control" id="phoneNumber" placeholder="+1 555 000 0000" required>
                         </div>
-                        <button type='submit' class='btn btn-success'>Add Bookmark</button>
-                    </form>
-                    <ul id='bookmarkList' class='list-group mt-3'></ul>
-                </div>
-            </div>
-            <div id='settings' class='tab-pane fade'>
-                <div class='card'>
-                    <h3>Settings</h3>
-                    <form>
-                        <div class='form-group'>
-                            <label for='apiToken'>API Token:</label>
-                            <input type='text' class='form-control' id='apiToken' placeholder='Enter API Token' required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="4" placeholder="Type your message here…" required></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <small class="text-muted" id="charCount">0 / 160</small>
                         </div>
-                        <div class='form-group'>
-                            <label for='settingsSenderID'>Sender ID:</label>
-                            <input type='text' class='form-control' id='settingsSenderID' placeholder='Enter Sender ID' required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="senderID" class="form-label">Sender ID</label>
+                        <input type="text" class="form-control" id="senderID" placeholder="MyBrand" required>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-4 pt-3" style="border-top:1px solid var(--border-color);">
+                        <div>
+                            <span class="form-label d-block mb-1">Account Balance</span>
+                            <span class="balance-badge">
+                                <i class="bi bi-wallet2"></i>
+                                <span id="balance">1,000 USD</span>
+                            </span>
                         </div>
-                        <div class='form-group'>
-                            <label for='apiURL'>API URL:</label>
-                            <input type='text' class='form-control' id='apiURL' placeholder='Enter API URL' required>
-                        </div>
-                        <button type='button' class='btn btn-info'>Test Connection</button>
-                    </form>
-                </div>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-send me-1"></i> Send SMS
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
+
+        <!-- ── Bookmarks ─────────────────────────────────────── -->
+        <div id="bookmarks" class="tab-pane fade" role="tabpanel">
+            <div class="card">
+                <div class="card-title">
+                    <span class="title-icon"><i class="bi bi-bookmark-fill"></i></span>
+                    Bookmarks
+                </div>
+                <form id="bookmarkForm" class="d-flex gap-2 mb-3">
+                    <input type="url" class="form-control" id="bookmark" placeholder="https://example.com" required>
+                    <button type="submit" class="btn btn-success text-nowrap">
+                        <i class="bi bi-plus-lg me-1"></i> Add
+                    </button>
+                </form>
+                <hr class="divider my-2">
+                <ul id="bookmarkList" class="list-group mt-2"></ul>
+                <p id="noBookmarks" class="text-muted text-center small mt-3 mb-0">No bookmarks yet. Add one above!</p>
+            </div>
+        </div>
+
+        <!-- ── Settings ──────────────────────────────────────── -->
+        <div id="settings" class="tab-pane fade" role="tabpanel">
+            <div class="card">
+                <div class="card-title">
+                    <span class="title-icon"><i class="bi bi-gear-fill"></i></span>
+                    Settings
+                </div>
+                <form>
+                    <div class="mb-3">
+                        <label for="apiToken" class="form-label">API Token</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="apiToken" placeholder="Enter API Token" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleApiToken" style="border-color:var(--input-border);color:var(--text-secondary);">
+                                <i class="bi bi-eye" id="apiTokenEyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingsSenderID" class="form-label">Sender ID</label>
+                        <input type="text" class="form-control" id="settingsSenderID" placeholder="MyBrand" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apiURL" class="form-label">API URL</label>
+                        <input type="url" class="form-control" id="apiURL" placeholder="https://api.gatewayapi.com" required>
+                    </div>
+                    <div class="d-flex gap-2 mt-4 pt-3" style="border-top:1px solid var(--border-color);">
+                        <button type="button" class="btn btn-info" id="testConnection">
+                            <i class="bi bi-plug me-1"></i> Test Connection
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy me-1"></i> Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
-    <div class='footer'>© 2024 SMS Manager. All rights reserved.</div>
 </div>
-<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js'></script>
-<script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<footer class="footer">© 2024 SMS Manager. All rights reserved.</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Add functionality for bookmarks
-    $('#bookmarkForm').submit(function(event) {
-        event.preventDefault();
-        let bookmark = $('#bookmark').val();
-        $('#bookmarkList').append('<li class="list-group-item">' + bookmark + '</li>');
-        $('#bookmark').val('');
+    /* ── Dark / light mode toggle ─────────────── */
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon   = document.getElementById('themeIcon');
+
+    function applyTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        localStorage.setItem('sms-theme', theme);
+    }
+
+    themeToggle.addEventListener('click', () => {
+        applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    // Restore saved preference
+    applyTheme(localStorage.getItem('sms-theme') || 'light');
+
+    /* ── Bookmarks ────────────────────────────── */
+    const bookmarkList = document.getElementById('bookmarkList');
+    const noBookmarks  = document.getElementById('noBookmarks');
+
+    function refreshEmpty() {
+        noBookmarks.style.display = bookmarkList.children.length === 0 ? '' : 'none';
+    }
+    refreshEmpty();
+
+    document.getElementById('bookmarkForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const url = document.getElementById('bookmark').value.trim();
+        if (!url) return;
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `
+            <a href="${url}" target="_blank" rel="noopener" class="text-truncate" style="max-width:80%;color:var(--color-primary);">
+                <i class="bi bi-link-45deg me-1"></i>${url}
+            </a>
+            <button class="btn btn-outline-danger btn-sm remove-bm"><i class="bi bi-trash"></i></button>`;
+        li.querySelector('.remove-bm').addEventListener('click', () => { li.remove(); refreshEmpty(); });
+        bookmarkList.appendChild(li);
+        document.getElementById('bookmark').value = '';
+        refreshEmpty();
+    });
+
+    /* ── Character counter ────────────────────── */
+    const msgArea   = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    msgArea.addEventListener('input', () => {
+        charCount.textContent = `${msgArea.value.length} / 160`;
+    });
+
+    /* ── Toggle API token visibility ──────────── */
+    document.getElementById('toggleApiToken').addEventListener('click', function() {
+        const input = document.getElementById('apiToken');
+        const icon  = document.getElementById('apiTokenEyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
     });
 </script>
 </body>
